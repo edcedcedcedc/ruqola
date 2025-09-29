@@ -85,6 +85,22 @@ QByteArray EncryptionUtils::exportJWKPublicKey(RSA *rsaKey)
     return doc.toJson(QJsonDocument::Compact);
 }
 
+QByteArray EncryptionUtils::exportJWKEncryptedPrivateKey(const QByteArray &encryptedPrivateKey)
+{
+    QJsonObject jwkObj;
+    jwkObj[QStringLiteral("kty")] = QStringLiteral("RSA");
+    jwkObj[QStringLiteral("alg")] = QStringLiteral("RSA-OAEP-256");
+    jwkObj[QStringLiteral("key_ops")] = QJsonArray() << QStringLiteral("decrypt");
+    jwkObj[QStringLiteral("ext")] = true;
+
+    // Store the encrypted private key as base64url
+    const QString ePrivKeyBase64Url = QString::fromLatin1(encryptedPrivateKey.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
+    jwkObj[QStringLiteral("RSA-EPrivKey")] = ePrivKeyBase64Url;
+
+    QJsonDocument doc(jwkObj);
+    return doc.toJson(QJsonDocument::Compact);
+}
+
 EncryptionUtils::RSAKeyPair EncryptionUtils::generateRSAKey()
 {
     RSAKeyPair keyPair;
